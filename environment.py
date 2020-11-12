@@ -46,7 +46,9 @@ class Wall:
         painted_length = 0
         while painted_length < length:
             segment_length = np.random.normal(WALL_SEGMENT_EXPECTED_LENGTH, WALL_SEGMENT_EXPECTED_LENGTH / 5)
-            segment_color = np.random.randint(0, 255, 3, dtype=np.int)
+
+            color_hsv = np.array([[[np.random.randint(0, 179), 255, 255]]]).astype(np.uint8)
+            segment_color = tuple(cv2.cvtColor(color_hsv, cv2.COLOR_HSV2BGR)[0, 0, :])
             # Convert color type to int for correct drawing by OpenCV
             segment_color = tuple(int(channel) for channel in segment_color)
 
