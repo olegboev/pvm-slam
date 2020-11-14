@@ -1,10 +1,14 @@
+import json
+
 import cv2
 
 from environment import Environment
 
 
 def main():
-    environment = Environment('map.json')
+
+    map_data_file = r'map.json'
+    environment = Environment.load_from_file(map_data_file)
     image = environment.get_image()
 
     cv2.imshow('map', image)
