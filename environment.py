@@ -40,8 +40,10 @@ class Wall:
         """
         assert 0 <= t <= 1
 
+        point_location = t * np.linalg.norm(self.vertex1 - self.vertex2)
+
         for segment in self.segments:
-            if segment.t1 <= t <= segment.t2:
+            if segment.t1 <= point_location <= segment.t2:
                 return segment.color
 
         raise ValueError(f'Unable to find segment for parameter {t}')
@@ -62,7 +64,7 @@ class Wall:
 
             color_hsv = np.array([[[np.random.randint(0, 179), 255, 255]]]).astype(np.uint8)
             segment_color = tuple(cv2.cvtColor(color_hsv, cv2.COLOR_HSV2BGR)[0, 0, :])
-            # Convert color type to int for correct drawing by OpenCV
+            # Convert color type to int for correct usage by OpenCV
             segment_color = tuple(int(channel) for channel in segment_color)
 
             painted_length_new = min(painted_length + segment_length, length)
@@ -120,8 +122,9 @@ class Environment:
 
         return Environment(data)
 
-    def get_image(self):
+    def get_image(self, camera):
         """ Returns an image with the environment
+        :param camera: camera which position is used to draw camera symbol on a map
         :return: image with environment
         """
 
@@ -138,17 +141,45 @@ class Environment:
         # White image
         image = np.ones([image_height, image_width, 3], dtype=np.uint8) * 255
 
+        # Draw walls
         for wall in self.map.walls:
-            Environment._draw_wall(image, wall, line_width=2)
+            Environment._draw_wall(image, wall, thickness=2)
+
+        # Draw camera
+        Environment._draw_camera(image, camera, thickness=2)
 
         return image
 
     @staticmethod
-    def _draw_wall(image, wall, line_width=1):
+    def _draw_camera(image, camera, thickness=1):
+        """ Draws camera symbol on map image.
+        :param image: image where camera will be drawn
+        :param camera: object of Camera class
+        :param thickness: line thickness
+        :return:
+        """
+
+        # Currently yaw=0 is aligned with negative direction of Y axis
+        # Vertices of a triangle representing camera
+        vertices = np.zeros((4, 3))
+        vertices[:, 0] = [0, 0, -30, 1]
+        vertices[:, 1] = [-10, 0, 0, 1]
+        vertices[:, 2] = [10, 0, 0, 1]
+
+        vertices_plane = (camera.C2W @ vertices)[:2, :]
+
+        num_lines = vertices_plane.shape[1]
+        for i in range(num_lines):
+            j = (i + 1) % num_lines
+            cv2.line(image, tuple(np.round(vertices_plane[:, i]).astype(np.int)),
+                     tuple(np.round(vertices_plane[:, j]).astype(np.int)), (0, 0, 0), thickness)
+
+    @staticmethod
+    def _draw_wall(image, wall, thickness=1):
         """ Draws wall line on the image.
         :param image: image to draw on
         :param wall: wall to draw
-        :param line_width: line width to draw
+        :param thickness: line thickness
         :return:
         """
 
@@ -159,4 +190,4 @@ class Environment:
         for segment in wall.segments:
             points = [tuple(np.round(wall.vertex1 + wall_unit_dir * t).astype(np.int))
                       for t in [segment.t1, segment.t2]]
-            cv2.line(image, points[0], points[1], segment.color, line_width)
+            cv2.line(image, points[0], points[1], segment.color, thickness)
