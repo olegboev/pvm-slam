@@ -10,8 +10,7 @@ from environment import Environment
 def main():
     map_data_file = r'map.json'
     environment = Environment.load_from_file(map_data_file)
-
-    # TODO refactor visualization
+    camera = Camera(environment, 40, (40, 1), (0, 0), 0)
 
     trajectory = [[100, 100, -90], [700, 100, -90],
                   [700, 100, -180], [700, 500, -180],
@@ -21,25 +20,25 @@ def main():
 
     for i in range(len(trajectory) - 1):
         j = i + 1
-        value1 = np.array(trajectory[i], dtype=np.float)
-        value2 = np.array(trajectory[j], dtype=np.float)
+        trajectory_point_start = np.array(trajectory[i], dtype=np.float)
+        trajectory_point_finish = np.array(trajectory[j], dtype=np.float)
 
-        value1[-1] = np.deg2rad(value1[-1])
-        value2[-1] = np.deg2rad(value2[-1])
+        trajectory_point_start[-1] = np.deg2rad(trajectory_point_start[-1])
+        trajectory_point_finish[-1] = np.deg2rad(trajectory_point_finish[-1])
 
         steps = 20
         for t in range(steps):
 
-            value = value1 + t * (value2 - value1) / steps
+            trajectory_point = trajectory_point_start + t * (trajectory_point_finish - trajectory_point_start) / steps
 
-            camera_position = tuple(value[:2])
-            camera_yaw = value[2]
+            camera.position = tuple(trajectory_point[:2])
+            camera.yaw = trajectory_point[2]
 
-            camera = Camera(environment, 40, (40, 1), camera_position, camera_yaw)
             image_camera = camera.make_shot()
-
             image_environment = environment.get_image(camera)
 
+            # TODO refactor visualization
+            # Draw current state
             scale = 15
             image_camera = cv2.resize(image_camera, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
 
