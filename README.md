@@ -1,5 +1,5 @@
 # pvm-slam
-Planar Visual Monocular SLAM (PVM SLAM)
+Planar Visual Monocular SLAM (work in progress)
 
 ![Map](https://raw.githubusercontent.com/olegboev/pvm-slam/main/docs/media/map.gif)
 

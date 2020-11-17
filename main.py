@@ -5,12 +5,15 @@ import numpy as np
 
 from camera import Camera
 from environment import Environment
+from view import View
 
 
 def main():
     map_data_file = r'map.json'
     environment = Environment.load_from_file(map_data_file)
     camera = Camera(environment, 40, (40, 1), (0, 0), 0)
+
+    view = View(environment, camera)
 
     trajectory = [[100, 100, -90], [700, 100, -90],
                   [700, 100, -180], [700, 500, -180],
@@ -34,23 +37,7 @@ def main():
             camera.position = tuple(trajectory_point[:2])
             camera.yaw = trajectory_point[2]
 
-            image_camera = camera.make_shot()
-            image_environment = environment.get_image(camera)
-
-            # TODO refactor visualization
-            # Draw current state
-            scale = 15
-            image_camera = cv2.resize(image_camera, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
-
-            image_result = np.ones((900, 1000, 3), dtype=np.uint8) * 255
-            cv2.putText(image_result, 'Map', (450, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 0, 0), 2, cv2.LINE_AA)
-            image_result[50:50 + image_environment.shape[0], 100:100 + image_environment.shape[1], :] = \
-                image_environment
-
-            cv2.putText(image_result, 'Image on camera', (350, 100 + image_environment.shape[0]),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 0, 0), 2, cv2.LINE_AA)
-
-            image_result[780:780+image_camera.shape[0], 230:230+image_camera.shape[1], :] = image_camera
+            image_result = view.draw()
 
             cv2.imshow('map', image_result)
 

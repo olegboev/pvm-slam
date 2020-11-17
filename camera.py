@@ -169,7 +169,7 @@ class Camera:
                     color = wall.get_color_at(t)
         return color
 
-    def make_shot(self):
+    def get_frame_image(self):
         """ Makes a picture of the environment.
         :return: picture as numpy array in BGR color space
         """
