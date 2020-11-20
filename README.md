@@ -9,3 +9,4 @@ Planar Visual Monocular SLAM (work in progress)
 - [x] Implement camera defined by focal length and resolution
 - [x] Produce image from camera by casting rays to the walls  
 - [x] Move camera on the map
+- [x] Detect and match feature points
